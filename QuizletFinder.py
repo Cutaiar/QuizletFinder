@@ -48,6 +48,9 @@ def LNSW(phrase):
     sortedwords = sorted(filtered_sentence, key=len)
     return None if len(sortedwords) == 0 else sortedwords[-1]
 
+def prune(phrase):
+    return phrase[3:-3]
+
 #https://stackoverflow.com/questions/1883980/find-the-nth-occurrence-of-substring-in-a-string
 def findnth(haystack, needle, n):
     parts= haystack.split(needle, n+1)
@@ -123,64 +126,52 @@ def get_data_from(url):
 
 ###########################################################
 
-query = "U.S. president after Lincoln, almost impeached by the Radical Republicans quizlet"
-#query = input("Whats the question?\n")
+def main():
+    running = True;
+    while running:
+        #query = "U.S. president after Lincoln, almost impeached by the Radical Republicans quizlet"
+        query = input("Whats the question? (Type 'exit' to quit)\n\n")
+        if query == "exit":
+            running = False
+            break
+        # Get all the urls
+        urls = []
+        for j in search(query, tld="co.in", num=numSites, stop=numSites, pause=1): 
+            if ("quizlet" in j):
+                n = findnth(j, "/", 3)
+                jfinal = j[0:n+1]
+                urls.append(jfinal)
+                #print(jfinal)
 
-# Get all the urls
-urls = []
-for j in search(query, tld="co.in", num=numSites, stop=numSites, pause=1): 
-    if ("quizlet" in j):
-        n = findnth(j, "/", 3)
-        jfinal = j[0:n+1]
-        urls.append(jfinal)
-        #print(jfinal)
+        # Validate Quizlets
+        # https://repl.it/@DevinShende/Quizlet-Scraper
+        pp = pprint.PrettyPrinter(indent=4)
 
-# Validate Quizlets
-# https://repl.it/@DevinShende/Quizlet-Scraper
-pp = pprint.PrettyPrinter(indent=4)
+        for url in urls:
+            data = get_data_from(url) # Just doing the first one for now
+            for pair in data:
+                t = pair["term"]
+                d = pair["definition"]
+                keyword_lnsw = LNSW(query)
+                keyword_prune = prune(query)
+                #print(keyword_prune)
+                if keyword_lnsw == None: 
+                    print("None keyword_lnsw")
+                    exit
+                #print(keyword_lnsw)
 
-for url in urls:
-    data = get_data_from(url) # Just doing the first one for now
-    for pair in data:
-        t = pair["term"]
-        d = pair["definition"]
-        keyword_lnsw = LNSW(query)
-        if keyword_lnsw == None: 
-            print("None keyword_lnsw")
-            exit
-        #print(keyword_lnsw)
+                matchedT = re.findall(keyword_prune, t);
+                matchedD = re.findall(keyword_prune, d);
+                #print("T", matchedT, "\n", "D", matchedD)
+                if len(matchedT) != 0 or len(matchedD) != 0:
+                    print("\n\n -------------------------Found!-------------------------\n\n")
+                    pp.pprint(pair)
+                    print("\n\n --------------------------------------------------------\n\n")
+                #print(matches)
+            #pp.pprint(data)
 
-        matchedT = re.findall(keyword_lnsw, t);
-        matchedD = re.findall(keyword_lnsw, d);
-        #print("T", matchedT, "\n", "D", matchedD)
-        if len(matchedT) != 0 or len(matchedD) != 0:
-            pp.pprint(pair)
-            print("\n\n --------------------------------------------------------\n\n")
-        #print(matches)
-    #pp.pprint(data)
+        # Open selenium window with all urls
+        #browser = webdriver.Chrome(executable_path='../chromedriver.exe')
+        #browser.get(urls[0])
 
-# Open selenium window with all urls
-#browser = webdriver.Chrome(executable_path='../chromedriver.exe')
-#browser.get(urls[0])
-
-# # https://stackoverflow.com/questions/4925966/searching-through-webpage
-# # https://stackoverflow.com/questions/24153519/how-to-read-html-from-a-url-in-python-3
-# r = requests.get(j)
-# html = r.text
-
-# # create keywords
-# example_sent = query
-
-
-
-# #matches = re.findall(sortedwords[-1], html);
-# matches = searchAround(html, sortedwords[-1], 10)
-# #matchList = list(matches)
-# print (matches)
-
-# if len(matches) == 0: 
-#     print ('I did not find anything')
-# else:
-#     print ('My string is in the html')
-#     print (matches)
-
+main()
