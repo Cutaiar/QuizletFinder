@@ -46,7 +46,7 @@ def LNSW(phrase):
         if w not in stop_words: 
             filtered_sentence.append(w) 
     sortedwords = sorted(filtered_sentence, key=len)
-    return sortedwords[-1]
+    return None if len(sortedwords) == 0 else sortedwords[-1]
 
 #https://stackoverflow.com/questions/1883980/find-the-nth-occurrence-of-substring-in-a-string
 def findnth(haystack, needle, n):
@@ -123,7 +123,8 @@ def get_data_from(url):
 
 ###########################################################
 
-query = "U.S. president after Lincoln, almost impeached by the Radical Republicans quizlet"#input("Whats the question?\n")
+query = "U.S. president after Lincoln, almost impeached by the Radical Republicans quizlet"
+#query = input("Whats the question?\n")
 
 # Get all the urls
 urls = []
@@ -136,9 +137,27 @@ for j in search(query, tld="co.in", num=numSites, stop=numSites, pause=1):
 
 # Validate Quizlets
 # https://repl.it/@DevinShende/Quizlet-Scraper
-data = get_data_from(urls[0]) # Just doing the first one for now
 pp = pprint.PrettyPrinter(indent=4)
-pp.pprint(data)
+
+for url in urls:
+    data = get_data_from(url) # Just doing the first one for now
+    for pair in data:
+        t = pair["term"]
+        d = pair["definition"]
+        keyword_lnsw = LNSW(query)
+        if keyword_lnsw == None: 
+            print("None keyword_lnsw")
+            exit
+        #print(keyword_lnsw)
+
+        matchedT = re.findall(keyword_lnsw, t);
+        matchedD = re.findall(keyword_lnsw, d);
+        #print("T", matchedT, "\n", "D", matchedD)
+        if len(matchedT) != 0 or len(matchedD) != 0:
+            pp.pprint(pair)
+            print("\n\n --------------------------------------------------------\n\n")
+        #print(matches)
+    #pp.pprint(data)
 
 # Open selenium window with all urls
 #browser = webdriver.Chrome(executable_path='../chromedriver.exe')
