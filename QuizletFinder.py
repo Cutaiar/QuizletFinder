@@ -130,8 +130,8 @@ def main():
     running = True;
     while running:
         #query = "U.S. president after Lincoln, almost impeached by the Radical Republicans quizlet"
-        query = input("Whats the question? (Type 'exit' to quit)\n\n")
-        if query == "exit":
+        query = input("Whats the question? (Type 'q' to quit)\n\n")
+        if query == "q":
             running = False
             break
         # Get all the urls
@@ -143,32 +143,43 @@ def main():
                 urls.append(jfinal)
                 #print(jfinal)
 
-        # Validate Quizlets
-        # https://repl.it/@DevinShende/Quizlet-Scraper
+        # Check data from quizlets to see if theres relevant stuff
         pp = pprint.PrettyPrinter(indent=4)
-
+        found = False
         for url in urls:
             data = get_data_from(url) # Just doing the first one for now
             for pair in data:
                 t = pair["term"]
                 d = pair["definition"]
-                keyword_lnsw = LNSW(query)
-                keyword_prune = prune(query)
-                #print(keyword_prune)
-                if keyword_lnsw == None: 
-                    print("None keyword_lnsw")
-                    exit
-                #print(keyword_lnsw)
-
+                keyword_prune = prune(query.lower())
                 matchedT = re.findall(keyword_prune, t);
                 matchedD = re.findall(keyword_prune, d);
-                #print("T", matchedT, "\n", "D", matchedD)
                 if len(matchedT) != 0 or len(matchedD) != 0:
-                    print("\n\n -------------------------Found!-------------------------\n\n")
+                    found = True
+                    print("\n\n -------------------------Found! (with prune)-------------------------\n\n")
                     pp.pprint(pair)
-                    print("\n\n --------------------------------------------------------\n\n")
+                    print("\n\n ---------------------------------------------------------------------\n\n")
+
+            # Now do the exact same thing with lnsw method
+            if not found:
+                for pair in data:
+                    t = pair["term"]
+                    d = pair["definition"]
+                    keyword_lnsw = LNSW(query)
+                    if keyword_lnsw == None: 
+                        print("None keyword_lnsw")
+                        exit
+                    matchedT = re.findall(keyword_lnsw, t);
+                    matchedD = re.findall(keyword_lnsw, d);
+                    if len(matchedT) != 0 or len(matchedD) != 0:
+                        found = True
+                        print("\n\n -------------------------Found! (with LNSW:", keyword_lnsw, ")-------------------------\n\n")
+                        pp.pprint(pair)
+                        print("\n\n -------------------------------------------------------------\n\n")
+
                 #print(matches)
             #pp.pprint(data)
+        if not found: print("\nNothing found.\n")
 
         # Open selenium window with all urls
         #browser = webdriver.Chrome(executable_path='../chromedriver.exe')
