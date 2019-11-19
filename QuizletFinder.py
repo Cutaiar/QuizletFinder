@@ -103,7 +103,8 @@ def scrape_data(url):
         if debugPrinting: print("YaY!!! real web page. Scraping data....")
         # YAY real page! Now let's do the work of extracting the terms and definitions
         data = [] # data will be a list containing many dicts with term and definition keys
-        content = soup.select("div.SetPage-terms")[0]
+
+        content = soup.select("div.SetPage-terms")[0] # TODO: This is broke becuase soup.select gives back an empty list
         pairs = content.select("div.SetPageTerm-content")
         for pair in pairs:
             term = pair.select("span.TermText")[0].get_text()
