@@ -21,6 +21,8 @@ import selenium.webdriver.support.ui as ui
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 
+import os
+
 
 numSites = 5
 debugPrinting = False
@@ -136,7 +138,8 @@ def main():
             break
         # Get all the urls
         urls = []
-        for j in search(query, tld="co.in", num=numSites, stop=numSites, pause=1): 
+        #os.environ['HTTP_PROXY'] = 'http://172.16.0.3:8888'
+        for j in search(query, tld="co.in", num=numSites, stop=numSites, pause=2): 
             if ("quizlet" in j):
                 n = findnth(j, "/", 3)
                 jfinal = j[0:n+1]
